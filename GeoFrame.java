@@ -25,7 +25,6 @@ public class GeoFrame extends JFrame {
     private JButton jButton1;
     private JButton jButton2;
 
-
     //Дополнительные компоненты
     private BufferedImage image1;
     private ImageIcon iIcon1;
@@ -55,7 +54,8 @@ public class GeoFrame extends JFrame {
                 "\nПри щелчке на точку, она удалится." +
                 "\nТочки можно перемещать." +
                 "\nВо время выполнения алгоритма запрещены" +
-                "\nлюбые изменения.");
+                "\nлюбые изменения."
+        );
         jText1.setBorder(BorderFactory.createLineBorder(Color.BLACK));
         jText1.setEditable(false);
         gPanel2 = new JPanel(new GridLayout(12, 1));
@@ -162,7 +162,6 @@ public class GeoFrame extends JFrame {
                     mainFrame.showPoints();
                     mainFrame.jLabel1.repaint();
                 }
-                mainFrame.info();
                 if (mainFrame.points.size() > 2) {
                     mainFrame.jButton2.setEnabled(true);
                 } else {
@@ -210,7 +209,6 @@ public class GeoFrame extends JFrame {
                         }
                     }
                 }
-                mainFrame.info();
             }
 
             @Override
@@ -233,7 +231,8 @@ public class GeoFrame extends JFrame {
                         "\nПри щелчке на точку, она удалится." +
                         "\nТочки можно перемещать." +
                         "\nВо время выполнения алгоритма запрещены" +
-                        "\nлюбые изменения.");
+                        "\nлюбые изменения."
+                );
                 mainFrame.jButton2.setEnabled(false);
             }
         }
@@ -246,15 +245,6 @@ public class GeoFrame extends JFrame {
             }
         }
         );
-    }
-
-    public void info() {
-        this.jText1.setText("");
-        int i = 1;
-        for (Point point : this.points) {
-            this.jText1.setText(this.jText1.getText() + "\n" + "Точка №" + i + ": " + point);
-            ++i;
-        }
     }
 
     public void clearImage() {
@@ -301,7 +291,13 @@ public class GeoFrame extends JFrame {
         if (atan2 < 0) {
             atan2 += 2 * Math.PI;
         }
-        System.out.println(Y1 + " " + Y2);
+        if (atan1 == 0) {
+            atan1 += 2 * Math.PI - 0.00001;
+        }
+        if (atan2 == 0) {
+            atan2 += 2 * Math.PI - 0.00001;
+        }
+        ;
         if (atan1 == atan2) {
             return 0;
         } else if (Y1 >= 0 && Y2 >= 0) {
@@ -333,42 +329,35 @@ public class GeoFrame extends JFrame {
         this.points.remove(this.closestPoint());
         this.sort(tP);
         this.points.add(0, tP);
-        ArrayList<Point> uniqArray = new ArrayList<Point>();
-        for (Point p : this.points) {
-            uniqArray.add(p);
-        }
-        for(int i=2; i<uniqArray.size(); i++){
-            if(this.myCompare(uniqArray.get(0), uniqArray.get(i),uniqArray.get(i-1))==0){
-                uniqArray.remove(i-1);
-            }
-        }
         for (int i = 1; i < points.size(); i++) {
             g.setColor(Color.BLUE);
             drawP(i);
             jLabel1.update(jLabel1.getGraphics());
             g.setColor(Color.RED);
         }
-        Point p0 = uniqArray.get(0);
-        Point p1 = uniqArray.get(1);
+        Point p0 = points.get(0);
+        Point p1 = points.get(1);
         this.bestPoints.add(p0);
         this.bestPoints.add(p1);
         this.clearImage();
         this.showPoints();
         this.g.setColor(Color.GREEN);
 
-        for (int i = 2; i < this.points.size(); i++) {
-            while (Vector.mulVectors(new Vector(this.bestPoints.get(this.bestPoints.size() - 1), this.bestPoints.get(this.bestPoints.size() - 2)),
-                    new Vector(this.bestPoints.get(this.bestPoints.size() - 1), uniqArray.get(i))) > 0) {
-                this.bestPoints.remove(this.bestPoints.size() - 1);
-                this.g.setColor(Color.BLUE);
-                this.clearImage();
-                this.showPoints();
-                this.g.setColor(Color.GREEN);
+        for (int i = 2; i < points.size(); i++) {
+            if (points.size() > i) {
+                while (Vector.mulVectors(new Vector(this.bestPoints.get(this.bestPoints.size() - 1), this.bestPoints.get(this.bestPoints.size() - 2)),
+                        new Vector(this.bestPoints.get(this.bestPoints.size() - 1), points.get(i))) > 0) {
+                    this.bestPoints.remove(this.bestPoints.size() - 1);
+                    this.g.setColor(Color.BLUE);
+                    this.clearImage();
+                    this.showPoints();
+                    this.g.setColor(Color.GREEN);
+                    this.drawB();
+                }
+                this.bestPoints.add(this.points.get(i));
                 this.drawB();
+                jLabel1.update(jLabel1.getGraphics());
             }
-            this.bestPoints.add(this.points.get(i));
-            this.drawB();
-            jLabel1.update(jLabel1.getGraphics());
         }
         g.drawLine(this.bestPoints.get(this.bestPoints.size() - 1).getX(), this.bestPoints.get(this.bestPoints.size() - 1).getY(),
                 this.bestPoints.get(0).getX(), this.bestPoints.get(0).getY());
@@ -384,7 +373,8 @@ public class GeoFrame extends JFrame {
         t.start();
         synchronized (t) {
             try {
-                t.sleep(40);
+                t.wait();
+                t.sleep(10);
                 for (int i = 1; i < bestPoints.size(); i++) {
                     g.drawLine(bestPoints.get(i - 1).getX(), bestPoints.get(i - 1).getY(),
                             bestPoints.get(i).getX(), bestPoints.get(i).getY());
@@ -404,7 +394,8 @@ public class GeoFrame extends JFrame {
         t.start();
         synchronized (t) {
             try {
-                t.sleep(40);
+                t.wait();
+                t.sleep(10);
                 g.drawLine(points.get(0).getX(), points.get(0).getY(),
                         points.get(i).getX(), points.get(i).getY());
             } catch (InterruptedException ex) {
