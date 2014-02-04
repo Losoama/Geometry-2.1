@@ -24,7 +24,6 @@ public class GeoFrame extends JFrame {
 
     private JButton jButton1;
     private JButton jButton2;
-    private JButton jButton3;
 
 
     //Дополнительные компоненты
@@ -45,12 +44,18 @@ public class GeoFrame extends JFrame {
         this.setResizable(false);
         this.setBounds(DEFAULT_POSITION_X, DEFAULT_POSITION_Y, DEFAULT_WIDTH, DEFAULT_HEIGHT);
         this.setIconImage(Toolkit.getDefaultToolkit().createImage("C:\\Users\\Игорь\\Desktop\\Документы\\X7l5SlpT1Uc.jpg"));
-        this.setTitle("Геометрия 1.1. Задание 1");
+        this.setTitle("Геометрия 2.1. Задание 2");
 
         gPanel1 = new JPanel(new BorderLayout());
         jLabel1 = new JLabel();
         jLabel1.setBorder(BorderFactory.createLineBorder(Color.BLACK));
-        jText1 = new JTextArea("А у реки, а у реки, а у реки...");
+        jText1 = new JTextArea("Правила:" +
+                "\nЧтобы добавить точку, щелкните на \nсвободную область." +
+                "\nНачало координат слева вверху." +
+                "\nПри щелчке на точку, она удалится." +
+                "\nТочки можно перемещать." +
+                "\nВо время выполнения алгоритма запрещены" +
+                "\nлюбые изменения.");
         jText1.setBorder(BorderFactory.createLineBorder(Color.BLACK));
         jText1.setEditable(false);
         gPanel2 = new JPanel(new GridLayout(12, 1));
@@ -61,12 +66,10 @@ public class GeoFrame extends JFrame {
         jButton1 = new JButton();
         jButton1.setText("Clear");
         jButton2 = new JButton();
-        jButton2.setText("Create");
-        jButton3 = new JButton();
-        jButton3.setText("Info");
+        jButton2.setEnabled(false);
+        jButton2.setText("Go!");
         gPanel2.add(jButton1);
         gPanel2.add(jButton2);
-        gPanel2.add(jButton3);
 
         this.setContentPane(this.gPanel1);
         this.setVisible(true);
@@ -126,9 +129,9 @@ public class GeoFrame extends JFrame {
                     boolean isContained = false;
                     //Проверка, отпускаем ли над областью точки
                     for (Point point : mainFrame.points) {
-                        if (point.equals(new Point(e.getX(), e.getY()), 1000)) {
+                        if (point.equals(new Point(e.getX(), e.getY()), 40)) {
                             isContained = true;
-                            if (point.equals(new Point(e.getX(), e.getY()), 300) && mainFrame.isDragged != -2) {
+                            if (point.equals(new Point(e.getX(), e.getY()), 30) && mainFrame.isDragged != -2) {
                                 isDelete = true;
                             }
                             break;
@@ -160,6 +163,11 @@ public class GeoFrame extends JFrame {
                     mainFrame.jLabel1.repaint();
                 }
                 mainFrame.info();
+                if (mainFrame.points.size() > 2) {
+                    mainFrame.jButton2.setEnabled(true);
+                } else {
+                    mainFrame.jButton2.setEnabled(false);
+                }
             }
         }
         );
@@ -181,7 +189,7 @@ public class GeoFrame extends JFrame {
                         mainFrame.isDragged = -2;
                     } else if (mainFrame.isDragged == -2) {
                         for (Point point : mainFrame.points) {
-                            if (point.equals(new Point(e.getX(), e.getY()), 1000)) {
+                            if (point.equals(new Point(e.getX(), e.getY()), 40)) {
                                 isSoClose = true;
                                 break;
                             }
@@ -219,7 +227,14 @@ public class GeoFrame extends JFrame {
                 mainFrame.image1.getGraphics().fillRect(0, 0, 480, 640);
                 mainFrame.jLabel1.repaint();
                 mainFrame.points.clear();
-                mainFrame.jText1.setText("А у реки, а у реки, а у реки");
+                mainFrame.jText1.setText("Правила:" +
+                        "\nЧтобы добавить точку, щелкните на \nсвободную область." +
+                        "\nНачало координат слева вверху." +
+                        "\nПри щелчке на точку, она удалится." +
+                        "\nТочки можно перемещать." +
+                        "\nВо время выполнения алгоритма запрещены" +
+                        "\nлюбые изменения.");
+                mainFrame.jButton2.setEnabled(false);
             }
         }
         );
@@ -228,14 +243,6 @@ public class GeoFrame extends JFrame {
             @Override
             public void actionPerformed(ActionEvent e) {
                 mainFrame.graham();
-            }
-        }
-        );
-
-        mainFrame.jButton3.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                mainFrame.info();
             }
         }
         );
@@ -278,54 +285,71 @@ public class GeoFrame extends JFrame {
 
     }
 
+    public int myCompare(Point p, Point p1, Point p2) {
+        int X0 = p.getX();
+        int X1 = p1.getX() - X0;
+        int X2 = p2.getX() - X0;
+        int Y0 = p.getY();
+        int Y1 = p1.getY() - Y0;
+        int Y2 = p2.getY() - Y0;
+
+        double atan1 = Math.atan((double) Y1 / X1);
+        if (atan1 < 0) {
+            atan1 += 2 * Math.PI;
+        }
+        double atan2 = Math.atan((double) Y2 / X2);
+        if (atan2 < 0) {
+            atan2 += 2 * Math.PI;
+        }
+        System.out.println(Y1 + " " + Y2);
+        if (atan1 == atan2) {
+            return 0;
+        } else if (Y1 >= 0 && Y2 >= 0) {
+            return atan1 > atan2 ? 1 : -1;
+        } else if (Y1 < 0 && Y2 > 0) {
+            return -1;
+        } else if (Y1 > 0 && Y2 < 0) {
+            return 1;
+        } else {
+            return atan1 > atan2 ? 1 : -1;
+        }
+    }
+
     public void sort(final Point p) {
         Collections.sort(this.points, new Comparator<Point>() {
             @Override
             public int compare(Point p1, Point p2) {
-                int X0 = p.getX();
-                int X1 = p1.getX() - X0;
-                int X2 = p2.getX() - X0;
-                int Y0 = p.getY();
-                int Y1 = p1.getY() - Y0;
-                int Y2 = p2.getY() - Y0;
-
-                double atan1 = Math.atan((double) Y1 / X1);
-                if (atan1 < 0) {
-                    atan1 += 2 * Math.PI;
-                }
-                double atan2 = Math.atan((double) Y2 / X2);
-                if (atan2 < 0) {
-                    atan2 += 2 * Math.PI;
-                }
-                System.out.println(Y1 + " " + Y2);
-                if (Y1 >= 0 && Y2 >= 0) {
-                    return atan1 > atan2 ? 1 : -1;
-                } else if (Y1 < 0 && Y2 > 0) {
-                    return -1;
-                } else if (Y1 > 0 && Y2 < 0) {
-                    return 1;
-                } else {
-                    return atan1 > atan2 ? 1 : -1;
-                }
+                return myCompare(p, p1, p2);
             }
         });
     }
 
     public void graham() {
+        this.jButton1.setEnabled(false);
+        this.jButton2.setEnabled(false);
         this.bestPoints = new ArrayList<Point>();
         Point tP;
         tP = this.points.get(this.closestPoint());
         this.points.remove(this.closestPoint());
         this.sort(tP);
         this.points.add(0, tP);
+        ArrayList<Point> uniqArray = new ArrayList<Point>();
+        for (Point p : this.points) {
+            uniqArray.add(p);
+        }
+        for(int i=2; i<uniqArray.size(); i++){
+            if(this.myCompare(uniqArray.get(0), uniqArray.get(i),uniqArray.get(i-1))==0){
+                uniqArray.remove(i-1);
+            }
+        }
         for (int i = 1; i < points.size(); i++) {
             g.setColor(Color.BLUE);
             drawP(i);
             jLabel1.update(jLabel1.getGraphics());
             g.setColor(Color.RED);
         }
-        Point p0 = this.points.get(0);
-        Point p1 = this.points.get(1);
+        Point p0 = uniqArray.get(0);
+        Point p1 = uniqArray.get(1);
         this.bestPoints.add(p0);
         this.bestPoints.add(p1);
         this.clearImage();
@@ -334,7 +358,7 @@ public class GeoFrame extends JFrame {
 
         for (int i = 2; i < this.points.size(); i++) {
             while (Vector.mulVectors(new Vector(this.bestPoints.get(this.bestPoints.size() - 1), this.bestPoints.get(this.bestPoints.size() - 2)),
-                    new Vector(this.bestPoints.get(this.bestPoints.size() - 1), this.points.get(i))) > 0) {
+                    new Vector(this.bestPoints.get(this.bestPoints.size() - 1), uniqArray.get(i))) > 0) {
                 this.bestPoints.remove(this.bestPoints.size() - 1);
                 this.g.setColor(Color.BLUE);
                 this.clearImage();
@@ -347,7 +371,8 @@ public class GeoFrame extends JFrame {
             jLabel1.update(jLabel1.getGraphics());
         }
         g.drawLine(this.bestPoints.get(this.bestPoints.size() - 1).getX(), this.bestPoints.get(this.bestPoints.size() - 1).getY(),
-                this.bestPoints.get(0).getX(),this.bestPoints.get(0).getY());
+                this.bestPoints.get(0).getX(), this.bestPoints.get(0).getY());
+        this.jButton1.setEnabled(true);
     }
 
     public synchronized void drawB() {
@@ -359,7 +384,7 @@ public class GeoFrame extends JFrame {
         t.start();
         synchronized (t) {
             try {
-                t.sleep(100);
+                t.sleep(40);
                 for (int i = 1; i < bestPoints.size(); i++) {
                     g.drawLine(bestPoints.get(i - 1).getX(), bestPoints.get(i - 1).getY(),
                             bestPoints.get(i).getX(), bestPoints.get(i).getY());
@@ -379,7 +404,7 @@ public class GeoFrame extends JFrame {
         t.start();
         synchronized (t) {
             try {
-                t.sleep(100);
+                t.sleep(40);
                 g.drawLine(points.get(0).getX(), points.get(0).getY(),
                         points.get(i).getX(), points.get(i).getY());
             } catch (InterruptedException ex) {
