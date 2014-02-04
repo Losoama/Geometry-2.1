@@ -289,32 +289,30 @@ public class GeoFrame extends JFrame {
                 int Y1 = p1.getY() - Y0;
                 int Y2 = p2.getY() - Y0;
 
-                double atan1 = Math.atan((double)Y1 / X1);
-                if(atan1 < 0){
-                    atan1 += 2*Math.PI;
+                double atan1 = Math.atan((double) Y1 / X1);
+                if (atan1 < 0) {
+                    atan1 += 2 * Math.PI;
                 }
-                double atan2 = Math.atan((double)Y2 / X2);
-                if(atan2 < 0){
-                    atan2 += 2*Math.PI;
+                double atan2 = Math.atan((double) Y2 / X2);
+                if (atan2 < 0) {
+                    atan2 += 2 * Math.PI;
                 }
-                System.out.println(Y1+" "+Y2);
-                if(Y1>=0 && Y2>=0){
-                return atan1>atan2?1:-1;
-                }
-                else if(Y1<0 && Y2>0){
+                System.out.println(Y1 + " " + Y2);
+                if (Y1 >= 0 && Y2 >= 0) {
+                    return atan1 > atan2 ? 1 : -1;
+                } else if (Y1 < 0 && Y2 > 0) {
                     return -1;
-                }
-                else if(Y1>0 && Y2<0){
+                } else if (Y1 > 0 && Y2 < 0) {
                     return 1;
-                }
-                else{
-                    return atan1>atan2?1:-1;
+                } else {
+                    return atan1 > atan2 ? 1 : -1;
                 }
             }
         });
     }
 
     public void graham() {
+        this.bestPoints = new ArrayList<Point>();
         Point tP;
         tP = this.points.get(this.closestPoint());
         this.points.remove(this.closestPoint());
@@ -330,18 +328,29 @@ public class GeoFrame extends JFrame {
         Point p1 = this.points.get(1);
         this.bestPoints.add(p0);
         this.bestPoints.add(p1);
+        this.clearImage();
+        this.showPoints();
+        this.g.setColor(Color.GREEN);
 
-        for(int i=2; i<this.points.size(); i++){
-            while(Vector.mulVectors(new Vector(p0,this.bestPoints.get(this.bestPoints.size()-2)), new Vector(p0,this.points.get(i)))<0){
-                this.bestPoints.remove(this.bestPoints.size()-1);
+        for (int i = 2; i < this.points.size(); i++) {
+            while (Vector.mulVectors(new Vector(this.bestPoints.get(this.bestPoints.size() - 1), this.bestPoints.get(this.bestPoints.size() - 2)),
+                    new Vector(this.bestPoints.get(this.bestPoints.size() - 1), this.points.get(i))) > 0) {
+                this.bestPoints.remove(this.bestPoints.size() - 1);
+                this.g.setColor(Color.BLUE);
+                this.clearImage();
+                this.showPoints();
+                this.g.setColor(Color.GREEN);
+                this.drawB();
             }
-            this.bestPoints.add( this.points.get(i));
+            this.bestPoints.add(this.points.get(i));
             this.drawB();
             jLabel1.update(jLabel1.getGraphics());
         }
+        g.drawLine(this.bestPoints.get(this.bestPoints.size() - 1).getX(), this.bestPoints.get(this.bestPoints.size() - 1).getY(),
+                this.bestPoints.get(0).getX(),this.bestPoints.get(0).getY());
     }
 
-    public synchronized void drawB(){
+    public synchronized void drawB() {
         Thread t = new Thread(new Runnable() {
             @Override
             public void run() {
@@ -351,8 +360,10 @@ public class GeoFrame extends JFrame {
         synchronized (t) {
             try {
                 t.sleep(100);
-                g.drawLine(bestPoints.get(this.bestPoints.size()-2).getX(), bestPoints.get(this.bestPoints.size()-2).getY(),
-                        bestPoints.get(this.bestPoints.size()-1).getX(), bestPoints.get(this.bestPoints.size()-1).getY());
+                for (int i = 1; i < bestPoints.size(); i++) {
+                    g.drawLine(bestPoints.get(i - 1).getX(), bestPoints.get(i - 1).getY(),
+                            bestPoints.get(i).getX(), bestPoints.get(i).getY());
+                }
             } catch (InterruptedException ex) {
                 Thread.currentThread().interrupt();
             }
