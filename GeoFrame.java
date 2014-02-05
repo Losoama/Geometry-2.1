@@ -263,12 +263,18 @@ public class GeoFrame extends JFrame {
     }
 
     public int closestPoint() {
-        double min = Double.MAX_VALUE;
+        Point min = new Point(Integer.MAX_VALUE,Integer.MAX_VALUE);
         int index = 0;
         for (Point point : this.points) {
-            if ((new Vector(new Point(0, 0), point)).getSize() < min) {
-                min = (new Vector(new Point(0, 0), point)).getSize();
-                index = this.points.indexOf(point);
+            if(point.getY() < min.getY()){
+                min = point;
+                index = points.indexOf(point);
+            }
+            else if(point.getY() == min.getY()){
+                if(point.getX()<min.getX()){
+                    min = point;
+                    index = points.indexOf(point);
+                }
             }
         }
         return index;
@@ -280,12 +286,6 @@ public class GeoFrame extends JFrame {
         int X1 = p1.getX() - X0;
         int X2 = p2.getX() - X0;
         int Y0 = p.getY();
-        if(p.getY()==p1.getY()){
-            p1 = new Point(p1.getX(),p1.getY()+1);
-        }
-        if(p.getY()==p2.getY()){
-            p2 = new Point(p2.getX(),p2.getY()+1);
-        }
         int Y1 = p1.getY() - Y0;
         int Y2 = p2.getY() - Y0;
 
@@ -297,13 +297,7 @@ public class GeoFrame extends JFrame {
         if (atan2 < 0) {
             atan2 += 2 * Math.PI;
         }
-        if (atan1 == 0) {
-            atan1 += 2 * Math.PI - 0.00001;
-        }
-        if (atan2 == 0) {
-            atan2 += 2 * Math.PI - 0.00001;
-        }
-        ;
+
         if (atan1 == atan2) {
             return 0;
         } else if (Y1 >= 0 && Y2 >= 0) {
