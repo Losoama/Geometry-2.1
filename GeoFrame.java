@@ -263,15 +263,14 @@ public class GeoFrame extends JFrame {
     }
 
     public int closestPoint() {
-        Point min = new Point(Integer.MAX_VALUE,Integer.MAX_VALUE);
+        Point min = new Point(Integer.MAX_VALUE, Integer.MAX_VALUE);
         int index = 0;
         for (Point point : this.points) {
-            if(point.getY() < min.getY()){
+            if (point.getY() < min.getY()) {
                 min = point;
                 index = points.indexOf(point);
-            }
-            else if(point.getY() == min.getY()){
-                if(point.getX()<min.getX()){
+            } else if (point.getY() == min.getY()) {
+                if (point.getX() < min.getX()) {
                     min = point;
                     index = points.indexOf(point);
                 }
@@ -335,18 +334,44 @@ public class GeoFrame extends JFrame {
             jLabel1.update(jLabel1.getGraphics());
             g.setColor(Color.RED);
         }
-        Point p0 = points.get(0);
-        Point p1 = points.get(1);
+        ArrayList<Point> uniqArray = new ArrayList<Point>();
+        for (Point p : this.points) {
+            uniqArray.add(p);
+        }
+        System.out.println("============");
+        int index = 2;
+        while (index < uniqArray.size()) {
+            for (Point p : uniqArray) {
+                System.out.println(p);
+            }
+            System.out.println(index);
+            if (this.myCompare(uniqArray.get(0), uniqArray.get(index), uniqArray.get(index - 1)) == 0) {
+                if ((new Vector(uniqArray.get(0), uniqArray.get(index))).getSize() >
+                        (new Vector(uniqArray.get(0), uniqArray.get(index - 1))).getSize()) {
+                    uniqArray.remove(index - 1);
+                }
+                else
+                {
+                    uniqArray.remove(index);
+                }
+            }
+            else{
+                index++;
+            }
+        }
+        System.out.println(uniqArray.size());
+        Point p0 = uniqArray.get(0);
+        Point p1 = uniqArray.get(1);
         this.bestPoints.add(p0);
         this.bestPoints.add(p1);
         this.clearImage();
         this.showPoints();
         this.g.setColor(Color.GREEN);
 
-        for (int i = 2; i < points.size(); i++) {
-            if (points.size() > i) {
+        for (int i = 2; i < uniqArray.size(); i++) {
+            /*if (uniqArray.size() > i)*/ {
                 while (Vector.mulVectors(new Vector(this.bestPoints.get(this.bestPoints.size() - 1), this.bestPoints.get(this.bestPoints.size() - 2)),
-                        new Vector(this.bestPoints.get(this.bestPoints.size() - 1), points.get(i))) > 0) {
+                        new Vector(this.bestPoints.get(this.bestPoints.size() - 1), uniqArray.get(i))) > 0) {
                     this.bestPoints.remove(this.bestPoints.size() - 1);
                     this.g.setColor(Color.BLUE);
                     this.clearImage();
@@ -354,7 +379,7 @@ public class GeoFrame extends JFrame {
                     this.g.setColor(Color.GREEN);
                     this.drawB();
                 }
-                this.bestPoints.add(this.points.get(i));
+                this.bestPoints.add(uniqArray.get(i));
                 this.drawB();
                 jLabel1.update(jLabel1.getGraphics());
             }
@@ -374,7 +399,7 @@ public class GeoFrame extends JFrame {
         synchronized (t) {
             try {
                 t.wait();
-                t.sleep(10);
+                t.sleep(1000);
                 for (int i = 1; i < bestPoints.size(); i++) {
                     g.drawLine(bestPoints.get(i - 1).getX(), bestPoints.get(i - 1).getY(),
                             bestPoints.get(i).getX(), bestPoints.get(i).getY());
