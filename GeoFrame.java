@@ -280,6 +280,12 @@ public class GeoFrame extends JFrame {
         int X1 = p1.getX() - X0;
         int X2 = p2.getX() - X0;
         int Y0 = p.getY();
+        if(p.getY()==p1.getY()){
+            p1 = new Point(p1.getX(),p1.getY()+1);
+        }
+        if(p.getY()==p2.getY()){
+            p2 = new Point(p2.getX(),p2.getY()+1);
+        }
         int Y1 = p1.getY() - Y0;
         int Y2 = p2.getY() - Y0;
 
