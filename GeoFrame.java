@@ -5,6 +5,7 @@ import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Random;
 
 //Класс главного окна приложения
 public class GeoFrame extends JFrame {
@@ -24,6 +25,7 @@ public class GeoFrame extends JFrame {
 
     private JButton jButton1;
     private JButton jButton2;
+    private JButton jButton3;
 
     //Дополнительные компоненты
     private BufferedImage image1;
@@ -65,11 +67,14 @@ public class GeoFrame extends JFrame {
 
         jButton1 = new JButton();
         jButton1.setText("Clear");
+        jButton3 = new JButton();
+        jButton3.setText("Random");
         jButton2 = new JButton();
         jButton2.setEnabled(false);
         jButton2.setText("Go!");
         gPanel2.add(jButton1);
         gPanel2.add(jButton2);
+        gPanel2.add(jButton3);
 
         this.setContentPane(this.gPanel1);
         this.setVisible(true);
@@ -245,6 +250,34 @@ public class GeoFrame extends JFrame {
             }
         }
         );
+
+        mainFrame.jButton3.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                Random r = new Random();
+                for (int i = 0; i < 10; i++) {
+                    boolean isCons = false;
+                    int X = r.nextInt(mainFrame.jLabel1.getWidth());
+                    int Y = r.nextInt(mainFrame.jLabel1.getHeight());
+                    for (Point point : mainFrame.points) {
+                        if (point.isContained(new Point(X, Y))) {
+                            isCons = true;
+                            break;
+                        }
+                    }
+                    if (!isCons) {
+                        mainFrame.points.add(new Point(X, Y));
+                        mainFrame.clearImage();
+                        mainFrame.showPoints();
+                    }
+                    mainFrame.jLabel1.repaint();
+                }
+                if (mainFrame.points.size() > 2) {
+                    mainFrame.jButton2.setEnabled(true);
+                }
+            }
+        }
+        );
     }
 
     public void clearImage() {
@@ -281,33 +314,9 @@ public class GeoFrame extends JFrame {
     }
 
     public int myCompare(Point p, Point p1, Point p2) {
-        int X0 = p.getX();
-        int X1 = p1.getX() - X0;
-        int X2 = p2.getX() - X0;
-        int Y0 = p.getY();
-        int Y1 = p1.getY() - Y0;
-        int Y2 = p2.getY() - Y0;
-
-        double atan1 = Math.atan((double) Y1 / X1);
-        if (atan1 < 0) {
-            atan1 += 2 * Math.PI;
-        }
-        double atan2 = Math.atan((double) Y2 / X2);
-        if (atan2 < 0) {
-            atan2 += 2 * Math.PI;
-        }
-
-        if (atan1 == atan2) {
-            return 0;
-        } else if (Y1 >= 0 && Y2 >= 0) {
-            return atan1 > atan2 ? 1 : -1;
-        } else if (Y1 < 0 && Y2 > 0) {
-            return -1;
-        } else if (Y1 > 0 && Y2 < 0) {
-            return 1;
-        } else {
-            return atan1 > atan2 ? 1 : -1;
-        }
+        Vector v1 = new Vector(p, p1);
+        Vector v2 = new Vector(p, p2);
+        return (byte) Math.signum(Vector.mulVectors(v2, v1));
     }
 
     public void sort(final Point p) {
@@ -338,28 +347,19 @@ public class GeoFrame extends JFrame {
         for (Point p : this.points) {
             uniqArray.add(p);
         }
-        System.out.println("============");
         int index = 2;
         while (index < uniqArray.size()) {
-            for (Point p : uniqArray) {
-                System.out.println(p);
-            }
-            System.out.println(index);
             if (this.myCompare(uniqArray.get(0), uniqArray.get(index), uniqArray.get(index - 1)) == 0) {
                 if ((new Vector(uniqArray.get(0), uniqArray.get(index))).getSize() >
                         (new Vector(uniqArray.get(0), uniqArray.get(index - 1))).getSize()) {
                     uniqArray.remove(index - 1);
-                }
-                else
-                {
+                } else {
                     uniqArray.remove(index);
                 }
-            }
-            else{
+            } else {
                 index++;
             }
         }
-        System.out.println(uniqArray.size());
         Point p0 = uniqArray.get(0);
         Point p1 = uniqArray.get(1);
         this.bestPoints.add(p0);
@@ -369,20 +369,18 @@ public class GeoFrame extends JFrame {
         this.g.setColor(Color.GREEN);
 
         for (int i = 2; i < uniqArray.size(); i++) {
-            /*if (uniqArray.size() > i)*/ {
-                while (Vector.mulVectors(new Vector(this.bestPoints.get(this.bestPoints.size() - 1), this.bestPoints.get(this.bestPoints.size() - 2)),
-                        new Vector(this.bestPoints.get(this.bestPoints.size() - 1), uniqArray.get(i))) > 0) {
-                    this.bestPoints.remove(this.bestPoints.size() - 1);
-                    this.g.setColor(Color.BLUE);
-                    this.clearImage();
-                    this.showPoints();
-                    this.g.setColor(Color.GREEN);
-                    this.drawB();
-                }
-                this.bestPoints.add(uniqArray.get(i));
+            while (Vector.mulVectors(new Vector(this.bestPoints.get(this.bestPoints.size() - 1), this.bestPoints.get(this.bestPoints.size() - 2)),
+                    new Vector(this.bestPoints.get(this.bestPoints.size() - 1), uniqArray.get(i))) > 0) {
+                this.bestPoints.remove(this.bestPoints.size() - 1);
+                this.g.setColor(Color.BLUE);
+                this.clearImage();
+                this.showPoints();
+                this.g.setColor(Color.GREEN);
                 this.drawB();
-                jLabel1.update(jLabel1.getGraphics());
             }
+            this.bestPoints.add(uniqArray.get(i));
+            this.drawB();
+            jLabel1.update(jLabel1.getGraphics());
         }
         g.drawLine(this.bestPoints.get(this.bestPoints.size() - 1).getX(), this.bestPoints.get(this.bestPoints.size() - 1).getY(),
                 this.bestPoints.get(0).getX(), this.bestPoints.get(0).getY());
@@ -398,8 +396,7 @@ public class GeoFrame extends JFrame {
         t.start();
         synchronized (t) {
             try {
-                t.wait();
-                t.sleep(1000);
+                t.sleep(10);
                 for (int i = 1; i < bestPoints.size(); i++) {
                     g.drawLine(bestPoints.get(i - 1).getX(), bestPoints.get(i - 1).getY(),
                             bestPoints.get(i).getX(), bestPoints.get(i).getY());
@@ -419,7 +416,6 @@ public class GeoFrame extends JFrame {
         t.start();
         synchronized (t) {
             try {
-                t.wait();
                 t.sleep(10);
                 g.drawLine(points.get(0).getX(), points.get(0).getY(),
                         points.get(i).getX(), points.get(i).getY());
