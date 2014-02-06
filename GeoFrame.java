@@ -17,20 +17,28 @@ public class GeoFrame extends JFrame {
     private final int DEFAULT_HEIGHT;     //высота окна
 
     //Компоненты
-    private JPanel gPanel1;
+    private static JPanel gPanel1;
 
-    private JLabel jLabel1;
-    private JTextArea jText1;
-    private JPanel gPanel2;
+    private static JLabel jLabel1;
+    private static JTextArea jText1;
+    private static JPanel gPanel2;
 
-    private JButton jButton1;
-    private JButton jButton2;
-    private JButton jButton3;
+    private static JButton jButton1;
+    private static JButton jButton2;
+    private static JButton jButton3;
 
     //Дополнительные компоненты
-    private BufferedImage image1;
-    private ImageIcon iIcon1;
-    private Graphics g;
+    private static BufferedImage image1;
+    private static ImageIcon iIcon1;
+    private static Graphics g;
+
+    private static final String rules = "Правила:" +
+            "\nЧтобы добавить точку, щелкните на \nсвободную область." +
+            "\nНачало координат слева вверху." +
+            "\nПри щелчке на точку, она удалится." +
+            "\nТочки можно перемещать." +
+            "\nВо время выполнения алгоритма запрещены" +
+            "\nлюбые изменения.";
 
     //Коструктор окна
     private GeoFrame() {
@@ -41,29 +49,22 @@ public class GeoFrame extends JFrame {
         DEFAULT_HEIGHT = t.getScreenSize().height / 2;
 
         JFrame.setDefaultLookAndFeelDecorated(true);
-        this.setDefaultCloseOperation(EXIT_ON_CLOSE);
-        this.setResizable(false);
-        this.setBounds(DEFAULT_POSITION_X, DEFAULT_POSITION_Y, DEFAULT_WIDTH, DEFAULT_HEIGHT);
-        this.setIconImage(Toolkit.getDefaultToolkit().createImage("C:\\Users\\Игорь\\Desktop\\Документы\\X7l5SlpT1Uc.jpg"));
-        this.setTitle("Геометрия 2.1. Задание 2");
+        setDefaultCloseOperation(EXIT_ON_CLOSE);
+        setResizable(false);
+        setBounds(DEFAULT_POSITION_X, DEFAULT_POSITION_Y, DEFAULT_WIDTH, DEFAULT_HEIGHT);
+        setIconImage(Toolkit.getDefaultToolkit().createImage("C:\\Users\\Игорь\\Desktop\\Документы\\X7l5SlpT1Uc.jpg"));
+        setTitle("Геометрия 2.1. Задание 2");
 
         gPanel1 = new JPanel(new BorderLayout());
         jLabel1 = new JLabel();
         jLabel1.setBorder(BorderFactory.createLineBorder(Color.BLACK));
-        jText1 = new JTextArea("Правила:" +
-                "\nЧтобы добавить точку, щелкните на \nсвободную область." +
-                "\nНачало координат слева вверху." +
-                "\nПри щелчке на точку, она удалится." +
-                "\nТочки можно перемещать." +
-                "\nВо время выполнения алгоритма запрещены" +
-                "\nлюбые изменения."
-        );
+        jText1 = new JTextArea(rules);
         jText1.setBorder(BorderFactory.createLineBorder(Color.BLACK));
         jText1.setEditable(false);
         gPanel2 = new JPanel(new GridLayout(12, 1));
-        gPanel1.add(this.jLabel1, BorderLayout.EAST);
-        gPanel1.add(this.gPanel2, BorderLayout.WEST);
-        gPanel1.add(this.jText1, BorderLayout.CENTER);
+        gPanel1.add(jLabel1, BorderLayout.EAST);
+        gPanel1.add(gPanel2, BorderLayout.WEST);
+        gPanel1.add(jText1, BorderLayout.CENTER);
 
         jButton1 = new JButton();
         jButton1.setText("Clear");
@@ -76,17 +77,17 @@ public class GeoFrame extends JFrame {
         gPanel2.add(jButton2);
         gPanel2.add(jButton3);
 
-        this.setContentPane(this.gPanel1);
-        this.setVisible(true);
+        setContentPane(gPanel1);
+        setVisible(true);
 
-        this.image1 = new BufferedImage(this.getWidth() / 2, this.jLabel1.getHeight(), BufferedImage.TYPE_INT_RGB);
-        this.image1.getGraphics().fillRect(0, 0, 480, 640);
-        this.image1.getGraphics().setColor(Color.BLACK);
+        image1 = new BufferedImage(getWidth() / 2, jLabel1.getHeight(), BufferedImage.TYPE_INT_RGB);
+        image1.getGraphics().fillRect(0, 0, 480, 640);
+        image1.getGraphics().setColor(Color.BLACK);
 
         iIcon1 = new ImageIcon();
-        iIcon1.setImage(this.image1);
-        this.jLabel1.setIcon(iIcon1);
-        g = this.image1.getGraphics();
+        iIcon1.setImage(image1);
+        jLabel1.setIcon(iIcon1);
+        g = image1.getGraphics();
     }
 
     public static GeoFrame getGeoFrame() {
@@ -94,33 +95,33 @@ public class GeoFrame extends JFrame {
     }
 
     //Глобальные переменные
-    ArrayList<Point> points = new ArrayList<Point>();
-    ArrayList<Point> bestPoints = new ArrayList<Point>();
+    static ArrayList<Point> points = new ArrayList<Point>();
+    static ArrayList<Point> bestPoints = new ArrayList<Point>();
     //Нажата ли кнопка
-    boolean isClicked = false;
+    static boolean isClicked = false;
     /*
      * Если isDragged > 0, значит, было нажатие на точку
      * -1 и 0 - отсутствие нажатия
      * -2 - до события было нажатие на точку
      */
-    int isDragged = -1;
+    static int isDragged = -1;
     //Координаты точки нажатия
-    int X0, Y0;
+    static int X0, Y0;
 
     public static void main(String[] args) {
         final GeoFrame mainFrame = GeoFrame.getGeoFrame();
 
-        mainFrame.jLabel1.addMouseListener(new MouseAdapter() {
+        jLabel1.addMouseListener(new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent e) {
                 super.mousePressed(e);
-                mainFrame.isClicked = true;
+                isClicked = true;
                 //Нажатие по точке или нет.
-                for (Point point : mainFrame.points) {
+                for (Point point : points) {
                     if (point.isContained(new Point(e.getX(), e.getY()))) {
-                        mainFrame.isDragged = mainFrame.points.indexOf(point);
-                        mainFrame.X0 = e.getX();
-                        mainFrame.Y0 = e.getY();
+                        isDragged = points.indexOf(point);
+                        X0 = e.getX();
+                        Y0 = e.getY();
                         break;
                     }
                 }
@@ -130,175 +131,138 @@ public class GeoFrame extends JFrame {
             public void mouseReleased(MouseEvent e) {
                 super.mouseReleased(e);
                 boolean isDelete = false;
-                if (mainFrame.isClicked) {
+                if (isClicked) {
                     boolean isContained = false;
                     //Проверка, отпускаем ли над областью точки
-                    for (Point point : mainFrame.points) {
-                        if (point.equals(new Point(e.getX(), e.getY()), 40)) {
-                            isContained = true;
-                            if (point.equals(new Point(e.getX(), e.getY()), 30) && mainFrame.isDragged != -2) {
-                                isDelete = true;
-                            }
-                            break;
-                        }
+                    for (Point point : points) {
+                        isContained = point.equals(new Point(e.getX(), e.getY()), 40);
+                        isDelete = isContained &&
+                                point.equals(new Point(e.getX(), e.getY()), 30) && isDragged != -2;
+                        if (isContained) break;
                     }
-                    if (!isContained && mainFrame.isDragged != -2) {
-                        mainFrame.points.add(new Point(e.getX(), e.getY()));
-                        mainFrame.g.setColor(Color.RED);
-                        mainFrame.g.setPaintMode();
-                        mainFrame.g.drawOval(e.getX() - 3, e.getY() - 3, 3, 3);
-                        mainFrame.jLabel1.repaint();
+                    if (isDragged != -2) {
+                        if (!isContained) {
+                            points.add(new Point(e.getX(), e.getY()));
+                            g.drawOval(e.getX() - 3, e.getY() - 3, 3, 3);
+                        } else if (isDragged > -1 && isDelete) {
+                            points.remove(isDragged);
+                        }
                     } else {
-                        if (mainFrame.isDragged == -2 && !isDelete) {
-                            mainFrame.points.add(new Point(mainFrame.X0, mainFrame.Y0));
-                            mainFrame.g.setColor(Color.RED);
-                            mainFrame.g.setPaintMode();
-                            mainFrame.g.drawOval(mainFrame.X0 - 3, mainFrame.Y0 - 3, 3, 3);
-                            mainFrame.jLabel1.repaint();
-                        } else if (mainFrame.isDragged > -1 && isDelete) {
-                            mainFrame.points.remove(mainFrame.isDragged);
-                        }
+                        points.add(new Point(X0, Y0));
+                        g.drawOval(X0 - 3, Y0 - 3, 3, 3);
                     }
-                    isContained = false;
-                    isDelete = false;
-                    mainFrame.isDragged = -1;
-                    mainFrame.isClicked = false;
-                    mainFrame.clearImage();
-                    mainFrame.showPoints();
-                    mainFrame.jLabel1.repaint();
+
+                    isDragged = -1;
+                    isClicked = false;
+                    clearImage();
+                    showPoints();
+                    jLabel1.repaint();
                 }
-                if (mainFrame.points.size() > 2) {
-                    mainFrame.jButton2.setEnabled(true);
-                } else {
-                    mainFrame.jButton2.setEnabled(false);
-                }
+                jButton2.setEnabled(points.size() > 2);
             }
         }
         );
 
-        mainFrame.jLabel1.addMouseMotionListener(new MouseMotionListener() {
+        jLabel1.addMouseMotionListener(new MouseMotionListener() {
             @Override
             public void mouseDragged(MouseEvent e) {
                 boolean isSoClose = false;
-                if (mainFrame.isClicked) {
-                    if (mainFrame.isDragged > -1) {
-                        mainFrame.g.setColor(Color.WHITE);
-                        mainFrame.g.setPaintMode();
-                        mainFrame.g.drawOval(mainFrame.points.get(mainFrame.isDragged).getX() - 3,
-                                mainFrame.points.get(mainFrame.isDragged).getY() - 3, 3, 3);
-                        mainFrame.points.remove(mainFrame.isDragged);
-                        mainFrame.clearImage();
-                        mainFrame.showPoints();
-                        mainFrame.jLabel1.repaint();
-                        mainFrame.isDragged = -2;
-                    } else if (mainFrame.isDragged == -2) {
-                        for (Point point : mainFrame.points) {
-                            if (point.equals(new Point(e.getX(), e.getY()), 40)) {
-                                isSoClose = true;
-                                break;
-                            }
+                if (isClicked) {
+                    if (isDragged > -1) {
+                        g.drawOval(points.get(isDragged).getX() - 3,
+                                points.get(isDragged).getY() - 3, 3, 3);
+                        points.remove(isDragged);
+                        isDragged = -2;
+                    } else if (isDragged == -2) {
+                        for (Point point : points) {
+                            isSoClose = point.equals(new Point(e.getX(), e.getY()), 40);
+                            if (isSoClose) break;
                         }
-                        if (!isSoClose && e.getX() > 3 && e.getX() < mainFrame.getWidth() - 3
-                                && e.getY() > 3 && e.getY() < mainFrame.getHeight() - 3) {
-                            mainFrame.g.setColor(Color.WHITE);
-                            mainFrame.g.drawOval(mainFrame.X0 - 3,
-                                    mainFrame.Y0 - 3, 3, 3);
-                            mainFrame.g.setPaintMode();
-                            mainFrame.g.setColor(Color.RED);
-                            mainFrame.g.drawOval(e.getX() - 3,
+                        if (!isSoClose && e.getX() > 3 && e.getX() < jLabel1.getWidth() - 3
+                                && e.getY() > 3 && e.getY() < jLabel1.getHeight() - 3) {
+                            clearImage();
+                            g.drawOval(e.getX() - 3,
                                     e.getY() - 3, 3, 3);
-                            mainFrame.X0 = e.getX();
-                            mainFrame.Y0 = e.getY();
-                            mainFrame.showPoints();
-                            mainFrame.jLabel1.repaint();
+                            X0 = e.getX();
+                            Y0 = e.getY();
+
                         }
                     }
+                    showPoints();
                 }
             }
 
             @Override
             public void mouseMoved(MouseEvent e) {
-                //To change body of implemented methods use File | Settings | File Templates.
             }
         });
 
 
-        mainFrame.jButton1.addActionListener(new ActionListener() {
+        jButton1.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                mainFrame.image1.getGraphics().setColor(Color.WHITE);
-                mainFrame.image1.getGraphics().fillRect(0, 0, 480, 640);
-                mainFrame.jLabel1.repaint();
-                mainFrame.points.clear();
-                mainFrame.jText1.setText("Правила:" +
-                        "\nЧтобы добавить точку, щелкните на \nсвободную область." +
-                        "\nНачало координат слева вверху." +
-                        "\nПри щелчке на точку, она удалится." +
-                        "\nТочки можно перемещать." +
-                        "\nВо время выполнения алгоритма запрещены" +
-                        "\nлюбые изменения."
-                );
-                mainFrame.jButton2.setEnabled(false);
+                image1.getGraphics().setColor(Color.WHITE);
+                image1.getGraphics().fillRect(0, 0, 480, 640);
+                jLabel1.repaint();
+                points.clear();
+                jText1.setText(rules);
+                jButton2.setEnabled(false);
             }
         }
         );
 
-        mainFrame.jButton2.addActionListener(new ActionListener() {
+        jButton2.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                mainFrame.graham();
+                graham();
             }
         }
         );
 
-        mainFrame.jButton3.addActionListener(new ActionListener() {
+        jButton3.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 Random r = new Random();
                 for (int i = 0; i < 10; i++) {
                     boolean isCons = false;
-                    int X = r.nextInt(mainFrame.jLabel1.getWidth());
-                    int Y = r.nextInt(mainFrame.jLabel1.getHeight());
-                    for (Point point : mainFrame.points) {
-                        if (point.isContained(new Point(X, Y))) {
-                            isCons = true;
-                            break;
-                        }
+                    int X = 10 + r.nextInt(jLabel1.getWidth() - 20);
+                    int Y = 10 + r.nextInt(jLabel1.getHeight() - 20);
+                    for (Point point : points) {
+                        isCons = point.isContained(new Point(X, Y));
+                        if (isCons) break;
                     }
                     if (!isCons) {
-                        mainFrame.points.add(new Point(X, Y));
-                        mainFrame.clearImage();
-                        mainFrame.showPoints();
+                        points.add(new Point(X, Y));
+                        clearImage();
+                        showPoints();
                     }
-                    mainFrame.jLabel1.repaint();
+                    jLabel1.repaint();
                 }
-                if (mainFrame.points.size() > 2) {
-                    mainFrame.jButton2.setEnabled(true);
-                }
+                jButton2.setEnabled(points.size() > 2);
             }
         }
         );
     }
 
-    public void clearImage() {
-        this.image1.getGraphics().setColor(Color.WHITE);
-        this.image1.getGraphics().fillRect(0, 0, this.jLabel1.getWidth(), this.jLabel1.getHeight());
-        this.image1.getGraphics().setColor(Color.RED);
+    public static void clearImage() {
+        image1.getGraphics().setColor(Color.WHITE);
+        image1.getGraphics().fillRect(0, 0, jLabel1.getWidth(), jLabel1.getHeight());
+        image1.getGraphics().setColor(Color.RED);
     }
 
-    public void showPoints() {
-        for (Point point : this.points) {
-            this.g.setColor(Color.RED);
-            this.g.setPaintMode();
-            this.g.drawOval(point.getX() - 3, point.getY() - 3, 3, 3);
-            this.jLabel1.repaint();
+    public static void showPoints() {
+        for (Point point : points) {
+            g.setColor(Color.RED);
+            g.setPaintMode();
+            g.drawOval(point.getX() - 3, point.getY() - 3, 3, 3);
+            jLabel1.repaint();
         }
     }
 
-    public int closestPoint() {
+    public static int closestPoint() {
         Point min = new Point(Integer.MAX_VALUE, Integer.MAX_VALUE);
         int index = 0;
-        for (Point point : this.points) {
+        for (Point point : points) {
             if (point.getY() < min.getY()) {
                 min = point;
                 index = points.indexOf(point);
@@ -313,14 +277,14 @@ public class GeoFrame extends JFrame {
 
     }
 
-    public int myCompare(Point p, Point p1, Point p2) {
+    public static int myCompare(Point p, Point p1, Point p2) {
         Vector v1 = new Vector(p, p1);
         Vector v2 = new Vector(p, p2);
         return (byte) Math.signum(Vector.mulVectors(v2, v1));
     }
 
-    public void sort(final Point p) {
-        Collections.sort(this.points, new Comparator<Point>() {
+    public static void sort(final Point p) {
+        Collections.sort(points, new Comparator<Point>() {
             @Override
             public int compare(Point p1, Point p2) {
                 return myCompare(p, p1, p2);
@@ -328,15 +292,14 @@ public class GeoFrame extends JFrame {
         });
     }
 
-    public void graham() {
-        this.jButton1.setEnabled(false);
-        this.jButton2.setEnabled(false);
-        this.bestPoints = new ArrayList<Point>();
-        Point tP;
-        tP = this.points.get(this.closestPoint());
-        this.points.remove(this.closestPoint());
-        this.sort(tP);
-        this.points.add(0, tP);
+    public static void graham() {
+        jButton1.setEnabled(false);
+        jButton2.setEnabled(false);
+        bestPoints = new ArrayList<Point>();
+        Point tP = points.get(closestPoint());
+        points.remove(closestPoint());
+        sort(tP);
+        points.add(0, tP);
         for (int i = 1; i < points.size(); i++) {
             g.setColor(Color.BLUE);
             drawP(i);
@@ -344,12 +307,12 @@ public class GeoFrame extends JFrame {
             g.setColor(Color.RED);
         }
         ArrayList<Point> uniqArray = new ArrayList<Point>();
-        for (Point p : this.points) {
+        for (Point p : points) {
             uniqArray.add(p);
         }
         int index = 2;
         while (index < uniqArray.size()) {
-            if (this.myCompare(uniqArray.get(0), uniqArray.get(index), uniqArray.get(index - 1)) == 0) {
+            if (myCompare(uniqArray.get(0), uniqArray.get(index), uniqArray.get(index - 1)) == 0) {
                 if ((new Vector(uniqArray.get(0), uniqArray.get(index))).getSize() >
                         (new Vector(uniqArray.get(0), uniqArray.get(index - 1))).getSize()) {
                     uniqArray.remove(index - 1);
@@ -360,68 +323,50 @@ public class GeoFrame extends JFrame {
                 index++;
             }
         }
-        Point p0 = uniqArray.get(0);
-        Point p1 = uniqArray.get(1);
-        this.bestPoints.add(p0);
-        this.bestPoints.add(p1);
-        this.clearImage();
-        this.showPoints();
-        this.g.setColor(Color.GREEN);
+        bestPoints.add(uniqArray.get(0));
+        bestPoints.add(uniqArray.get(1));
+        clearImage();
+        showPoints();
+        g.setColor(Color.GREEN);
 
         for (int i = 2; i < uniqArray.size(); i++) {
-            while (Vector.mulVectors(new Vector(this.bestPoints.get(this.bestPoints.size() - 1), this.bestPoints.get(this.bestPoints.size() - 2)),
-                    new Vector(this.bestPoints.get(this.bestPoints.size() - 1), uniqArray.get(i))) > 0) {
-                this.bestPoints.remove(this.bestPoints.size() - 1);
-                this.g.setColor(Color.BLUE);
-                this.clearImage();
-                this.showPoints();
-                this.g.setColor(Color.GREEN);
-                this.drawB();
+            while (Vector.mulVectors(new Vector(bestPoints.get(bestPoints.size() - 1), bestPoints.get(bestPoints.size() - 2)),
+                    new Vector(bestPoints.get(bestPoints.size() - 1), uniqArray.get(i))) > 0) {
+                bestPoints.remove(bestPoints.size() - 1);
+                g.setColor(Color.BLUE);
+                clearImage();
+                showPoints();
+                g.setColor(Color.GREEN);
+                drawB();
             }
-            this.bestPoints.add(uniqArray.get(i));
-            this.drawB();
+            bestPoints.add(uniqArray.get(i));
+            drawB();
             jLabel1.update(jLabel1.getGraphics());
         }
-        g.drawLine(this.bestPoints.get(this.bestPoints.size() - 1).getX(), this.bestPoints.get(this.bestPoints.size() - 1).getY(),
-                this.bestPoints.get(0).getX(), this.bestPoints.get(0).getY());
-        this.jButton1.setEnabled(true);
+        g.drawLine(bestPoints.get(bestPoints.size() - 1).getX(), bestPoints.get(bestPoints.size() - 1).getY(),
+                bestPoints.get(0).getX(), bestPoints.get(0).getY());
+        jButton1.setEnabled(true);
     }
 
-    public synchronized void drawB() {
-        Thread t = new Thread(new Runnable() {
-            @Override
-            public void run() {
+    public static synchronized void drawB() {
+        try {
+            Thread.sleep(10);
+            for (int i = 1; i < bestPoints.size(); i++) {
+                g.drawLine(bestPoints.get(i - 1).getX(), bestPoints.get(i - 1).getY(),
+                        bestPoints.get(i).getX(), bestPoints.get(i).getY());
             }
-        });
-        t.start();
-        synchronized (t) {
-            try {
-                t.sleep(10);
-                for (int i = 1; i < bestPoints.size(); i++) {
-                    g.drawLine(bestPoints.get(i - 1).getX(), bestPoints.get(i - 1).getY(),
-                            bestPoints.get(i).getX(), bestPoints.get(i).getY());
-                }
-            } catch (InterruptedException ex) {
-                Thread.currentThread().interrupt();
-            }
+        } catch (InterruptedException ex) {
+            Thread.currentThread().interrupt();
         }
     }
 
-    public synchronized void drawP(final int i) {
-        Thread t = new Thread(new Runnable() {
-            @Override
-            public void run() {
-            }
-        });
-        t.start();
-        synchronized (t) {
-            try {
-                t.sleep(10);
-                g.drawLine(points.get(0).getX(), points.get(0).getY(),
-                        points.get(i).getX(), points.get(i).getY());
-            } catch (InterruptedException ex) {
-                Thread.currentThread().interrupt();
-            }
+    public static synchronized void drawP(final int i) {
+        try {
+            Thread.sleep(10);
+            g.drawLine(points.get(0).getX(), points.get(0).getY(),
+                    points.get(i).getX(), points.get(i).getY());
+        } catch (InterruptedException ex) {
+            Thread.currentThread().interrupt();
         }
     }
 }
